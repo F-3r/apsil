@@ -1,0 +1,5 @@
+[print "\n" print pop] :puts def
+
+5 4 3 2 1
+
+[puts pop] 5 times

@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+require_relative "../lib/apsil"
+require_relative "../lib/cli/args"
+
+require "reline"
+
+args = CLI::Args.new(
+  options: {["-r", "--runtime"] => :runtime},
+  flags: {["-d", "--debug"] => :debug}
+).parse(ARGV)
+
+runtime = Apsil::Runtime.load(args.runtime) if args.runtime
+interpreter = Apsil::Interpreter.new
+
+autocomplete_options = interpreter.env.keys.map(&:to_s).freeze
+Reline.completion_proc = proc { |s| autocomplete_options.grep(/#{Regexp.escape(s)}/) }
+
+while (line = Reline.readline("~> ", true))
+  next if line.nil? || line.empty?
+  begin
+    ast = Apsil::Compiler.parse(line)
+    result = interpreter.run(ast)
+    p result
+  rescue => e
+    puts e.message
+  end
+end
